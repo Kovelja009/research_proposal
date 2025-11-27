@@ -1,0 +1,70 @@
+\documentclass{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath}
+\usepackage{cite}
+
+%--- for references ---------
+\usepackage[
+    backend=biber,
+    style=numeric,
+    sorting=none
+    ]{biblatex}
+
+\addbibresource{bibliography.bib}
+\AtBeginBibliography{\vspace*{10pt}}
+%----------------------------
+
+% Parskip and parindent
+\setlength{\parindent}{0pt} % Begin of paragraph indentation
+\setlength{\parskip}{1em} % Paragraph spacing
+
+
+\begin{document}
+
+\begin{center}
+    \LARGE Self-Supervised Learning for Video Geometry\\[0.7em]  % Adjust spacing here
+    \large Vanja Kovinic
+    \vspace{1cm}
+\end{center}
+
+\section{Introduction}
+
+Recent advances in 3D vision have produced feed-forward models that reconstruct geometry without optimization. VGGT \cite{vggt} predicts camera poses, depth, and structure from multi-view images in under one second; Geo4D \cite{geo4d} extends to dynamic scenes using video diffusion priors. Both rely on labeled or synthetic supervision, limiting scalability to billions of hours of unlabeled video online.
+
+Videos offer an extraordinarily rich yet underutilized signal for geometric learning. Unlike static images, videos provide: (1) natural multi-view geometry through camera motion, (2) temporal consistency constraints that implicitly encode 3D structure, (3) motion cues that reveal depth ordering and object boundaries, and (4) virtually unlimited scale - billions of hours of video exist without geometric labels. Self-supervised learning transformed language \cite{bert} and vision \cite{mae,dino} by exploiting unlabeled data. Can it do the same for video geometry?
+
+Self-supervised monocular depth exists \cite{godard2019}, but methods focus on per-frame 
+predictions. Designing objectives that teach how 3D 
+structure evolves over time remains unexplored. Which temporal self-supervised objectives 
+best capture 4D structure? How data-efficient is video pretraining? What geometric 
+understanding emerges from unlabeled videos?
+
+\section{Background}
+
+\subsection{Feed-Forward Multi-View Reconstruction}
+
+Multi-view reconstruction traditionally requires optimization-based structure-from-motion 
+\cite{sfm}. Recent work replaces this with feed-forward prediction. 
+DUSt3R \cite{DUSt3R} pioneered dense point regression from image pairs but requires 
+global alignment for multiple views. VGGT \cite{vggt} extends this with camera tokens 
+and alternating attention, processing 1-200+ images jointly. MonST3R \cite{MonST3R} 
+performs pairwise tracking for dynamic scenes; Geo4D \cite{geo4d} adapts video diffusion 
+models. All require expensive supervision: DUSt3R/VGGT use structure-from-motion labels, 
+Geo4D uses synthetic data rendered from 3D assets, limiting real-world scalability.
+
+\subsection{Self-Supervised Learning}
+
+Self-supervised learning extracts training signals from data structure. Masked 
+autoencoders \cite{mae} reconstruct masked patches; DINO \cite{dino,dinov2} matches 
+predictions between augmented views, producing semantic features without labels. 
+VideoMAE \cite{videomae} extends masking to spatiotemporal tubes. For geometry, 
+self-supervised depth \cite{godard2019,watson2021} uses photometric consistency between 
+consecutive frames. However, methods predict per-frame depth independently, treating 
+video as image sequences rather than modeling temporal geometric reasoning. Whether 
+self-supervised objectives can teach spatiotemporal structure (tracking evolving 3D 
+geometry and maintaining multi-view consistency) remains unexplored, yet is fundamental 
+to scaling video geometric understanding.
+
+\newpage
+\printbibliography[title={References}]
+\end{document}
