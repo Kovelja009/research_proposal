@@ -65,6 +65,18 @@ self-supervised objectives can teach spatiotemporal structure (tracking evolving
 geometry and maintaining multi-view consistency) remains unexplored, yet is fundamental 
 to scaling video geometric understanding.
 
+
+\section{Problem Statement}
+
+While self-supervised learning has transformed image understanding, its application 
+to video geometry remains limited by several fundamental challenges:
+
+\textbf{Appearance vs geometry - } Geometric learning requires different signals than appearance-based pretraining. While methods like DINO learn semantic features through augmentation invariance, geometry demands precise metric structure and multi-view consistency. Models can minimize photometric loss through surface appearance matching without capturing underlying 3D structure. Do appearance-based objectives transfer to geometric reasoning, or is geometry-specific supervision necessary?
+
+\textbf{Temporal signals and shortcuts - } Videos encode geometric constraints through motion parallax and occlusion patterns, yet naive temporal objectives permit trivial solutions - copying pixels across frames or learning optical flow without depth understanding. Which temporal self-supervised objectives force genuine spatiotemporal geometric reasoning rather than enabling such shortcuts?
+
+\textbf{Scaling to real video - } Current methods use expensive supervision (VGGT) or synthetic data (Geo4D), limiting scale. Whether pretraining on real unlabeled video can match these approaches, how much data is required, and which objectives transfer most effectively to downstream tasks remain uncharacterized - yet are essential for scaling video geometric learning.
+
 \newpage
 \printbibliography[title={References}]
 \end{document}
