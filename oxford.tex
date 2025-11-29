@@ -52,30 +52,54 @@ performs pairwise tracking for dynamic scenes; Geo4D \cite{geo4d} adapts video d
 models. All require expensive supervision: DUSt3R/VGGT use structure-from-motion labels, 
 Geo4D uses synthetic data rendered from 3D assets, limiting real-world scalability.
 
-\subsection{Self-Supervised Learning}
+\subsection{Self-Supervised Learning (SSL)}
 
-Self-supervised learning extracts training signals from data structure. Masked 
+Self-supervised learning (SSL) extracts training signals from data structure. Masked 
 autoencoders \cite{mae} reconstruct masked patches; DINO \cite{dino,dinov2} matches 
 predictions between augmented views, producing semantic features without labels. 
 VideoMAE \cite{videomae} extends masking to spatiotemporal tubes. For geometry, 
 self-supervised depth \cite{godard2019,watson2021} uses photometric consistency between 
 consecutive frames. However, methods predict per-frame depth independently, treating 
 video as image sequences rather than modeling temporal geometric reasoning. Whether 
-self-supervised objectives can teach spatiotemporal structure (tracking evolving 3D 
+SSL objectives can teach spatiotemporal structure (tracking evolving 3D 
 geometry and maintaining multi-view consistency) remains unexplored, yet is fundamental 
 to scaling video geometric understanding.
 
 
 \section{Problem Statement}
 
-While self-supervised learning has transformed image understanding, its application 
+While SSL has transformed image understanding, its application 
 to video geometry remains limited by several fundamental challenges:
 
-\textbf{Appearance vs geometry - } Geometric learning requires different signals than appearance-based pretraining. While methods like DINO learn semantic features through augmentation invariance, geometry demands precise metric structure and multi-view consistency. Models can minimize photometric loss through surface appearance matching without capturing underlying 3D structure. Do appearance-based objectives transfer to geometric reasoning, or is geometry-specific supervision necessary?
+\textbf{Appearance vs geometry - }Geometric learning requires different signals than appearance-based pretraining. While methods like DINO learn semantic features through augmentation invariance, geometry demands precise metric structure and multi-view consistency. Models can minimize photometric loss through surface appearance matching without capturing underlying 3D structure. Do appearance-based objectives transfer to geometric reasoning, or is geometry-specific supervision necessary?
 
-\textbf{Temporal signals and shortcuts - } Videos encode geometric constraints through motion parallax and occlusion patterns, yet naive temporal objectives permit trivial solutions - copying pixels across frames or learning optical flow without depth understanding. Which temporal self-supervised objectives force genuine spatiotemporal geometric reasoning rather than enabling such shortcuts?
+\textbf{Temporal signals and shortcuts - }Videos encode geometric constraints through motion parallax and occlusion patterns, yet naive temporal objectives permit trivial solutions - copying pixels across frames or learning optical flow without depth understanding. Which temporal SSL objectives force genuine spatiotemporal geometric reasoning rather than enabling such shortcuts?
 
-\textbf{Scaling to real video - } Current methods use expensive supervision (VGGT) or synthetic data (Geo4D), limiting scale. Whether pretraining on real unlabeled video can match these approaches, how much data is required, and which objectives transfer most effectively to downstream tasks remain uncharacterized - yet are essential for scaling video geometric learning.
+\textbf{Scaling to real video - }Current methods use expensive supervision \cite{vggt} or synthetic data \cite{geo4d}, limiting scale. Whether pretraining on real unlabeled video can match these approaches, how much data is required, and which objectives transfer most effectively to downstream tasks remain uncharacterized - yet are essential for scaling video geometric learning.
+
+\section{Research Plan}
+
+\subsection{Research Questions}
+
+\textbf{(1) Which temporal SSL objectives effectively teach geometric structure?} Beyond existing approaches like photometric consistency~\cite{godard2019} or masked prediction~\cite{videomae}, can we design novel objectives that leverage video-specific signals - cycle consistency across longer sequences, multi-view geometric coupling, or predictive temporal reasoning - to force genuine 3D understanding rather than surface appearance matching?
+
+\textbf{(2) How do different temporal signals interact in multi-objective training?} SSL methods combine multiple objectives~\cite{dino,videomae} - temporal consistency, geometric coupling, predictive modeling. Which combinations are complementary versus redundant for geometric learning? Can we identify minimal sets that maximize geometric supervision while maintaining data efficiency?
+
+\textbf{(3) What are the data efficiency and scaling properties of video pretraining for geometry?} How much unlabeled video is required to match supervised methods like \cite{vggt} or synthetic approaches like \cite{geo4d}? Do scaling curves differ across objective types, and which downstream tasks benefit most from video pretraining?\subsection{Proposed Investigation}
+
+\textbf{Methodological framework.} This work systematically investigates SSL objectives across three categories: \textit{temporal consistency} (photometric matching~\cite{godard2019}, cycle consistency), \textit{geometric coupling} (depth-flow constraints, multi-view consistency~\cite{vggt}), and \textit{predictive modeling} (masked spatiotemporal reconstruction~\cite{videomae}). Beyond evaluating existing methods, this research designs and tests novel objectives that exploit video-specific geometric signals. Through controlled experiments isolating individual design choices - objective type, objective combination within type, and data scale - it establishes which approaches enable genuine geometric reasoning versus appearance-based shortcuts.
+
+\textbf{Experiment design.} Pretraining uses real unlabeled video from RealEstate10K~\cite{realestate10k} which has videos capturing diverse indoor and outdoor scenes with natural camera motion. Evaluation benchmarks include NYU Depth V2~\cite{nyu} and KITTI~\cite{kitti} for depth estimation, Sintel~\cite{sintel} for optical flow, and standard metrics for camera pose estimation. Comparisons against supervised baselines \cite{vggt} and synthetic pretraining approaches \cite{geo4d} measure both downstream task performance and data efficiency curves across varying amounts of pretraining data.
+
+\textbf{Timeline.} Year 1 establishes the training framework, evaluates existing temporal SSL objectives, and explores novel objectives leveraging video-specific geometric signals. Year 2 conducts comprehensive ablation studies across all objective categories (temporal consistency, geometric coupling, predictive modeling) and investigates multi-objective interactions. Year 3 characterizes data efficiency through scaling experiments and validates transfer to downstream tasks (depth, pose, flow estimation).
+
+\subsection{Expected Contributions}
+
+This work establishes systematic understanding of which SSL objectives teach video geometry, how temporal signals interact in multi-objective training, and the data requirements for matching supervised methods. By identifying minimal objective combinations that force genuine geometric reasoning while avoiding shortcuts, this research provides foundational knowledge enabling scalable geometric learning from unlabeled video. Open-source implementations will support reproducibility and future research in data-efficient video geometric learning.
+
+
+I would like to pursue this research under the supervision of Dr. Iro Laina and Dr. Christian Rupprecht, whose work on self-supervised video understanding and 3D geometry provides ideal guidance for investigating self-supervised geometric learning from video.
+
 
 \newpage
 \printbibliography[title={References}]
