@@ -14,6 +14,14 @@
 \AtBeginBibliography{\vspace*{10pt}}
 %----------------------------
 
+% Add hyperref for clickable links
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    citecolor=black,
+    urlcolor=black,
+}
+
 % Parskip and parindent
 \setlength{\parindent}{0pt} % Begin of paragraph indentation
 \setlength{\parskip}{1em} % Paragraph spacing
@@ -27,31 +35,31 @@
     \vspace{1cm}
 \end{center}
 
+% \vspace{-1cm}
 \section{Introduction}
 
-Recent advances in 3D vision have produced feed-forward models that reconstruct geometry without optimization. VGGT \cite{vggt} predicts camera poses, depth, and structure from multi-view images in under one second; Geo4D \cite{geo4d} extends to dynamic scenes using video diffusion priors. Both rely on labeled or synthetic supervision, limiting scalability to billions of hours of unlabeled video online.
+Recent advances in 3D vision have shifted from per-scene optimization methods like NeRF \cite{nerf} and Gaussian Splatting \cite{gs} to general feed-forward models that can reconstruct geometry across different scenes. VGGT \cite{vggt} predicts camera poses, depth, and structure from multi-view images in under one second; Geo4D \cite{geo4d} extends to dynamic scenes using video diffusion priors. Both rely on labeled or synthetic supervision, limiting scalability to billions of hours of unlabeled video online.
 
-Videos offer an extraordinarily rich yet underutilized signal for geometric learning. Unlike static images, videos provide: (1) natural multi-view geometry through camera motion, (2) temporal consistency constraints that implicitly encode 3D structure, (3) motion cues that reveal depth ordering and object boundaries, and (4) virtually unlimited scale - billions of hours of video exist without geometric labels. Self-supervised learning transformed language \cite{bert} and vision \cite{mae,dino} by exploiting unlabeled data. Can it do the same for video geometry?
+Videos offer an extraordinarily rich yet underutilized signal for geometric learning. Unlike static images, videos provide: (1) natural multi-view geometry through camera motion, (2) temporal consistency constraints that implicitly encode 3D structure, (3) motion cues that reveal depth ordering and object boundaries, and (4) orders of magnitude higher scale - billions of hours of video exist without geometric labels. Self-supervised learning transformed language \cite{bert} and vision \cite{mae,dino} by exploiting unlabeled data. Can we do the same for video geometry?
 
-Self-supervised monocular depth exists \cite{godard2019}, but methods focus on per-frame 
-predictions. Designing objectives that teach how 3D 
-structure evolves over time remains unexplored. Which temporal self-supervised objectives 
-best capture 4D structure? What geometric 
-understanding emerges from unlabeled videos?
+Self-supervised monocular depth has advanced significantly~\cite{godard2019,watson2021}, but methods treat video as independent frames. Recent work like SAM 3D~\cite{sam3d} demonstrates impressive single-image 3D reconstruction by training on diverse viewpoints, yet processes each image independently without leveraging temporal continuity. Designing self-supervised objectives that capture how geometry evolves through camera motion - temporal consistency across frames, multi-view geometric coupling - needs further exploration. Which temporal objectives best teach spatiotemporal reasoning? How data-efficient is learning from video sequences versus static multi-view datasets?
 
+\vspace{-0.5cm}
 \section{Background}
+\vspace{-0.5cm}
 
 \subsection{Feed-Forward Multi-View Reconstruction}
 
 Multi-view reconstruction traditionally requires optimization-based structure-from-motion 
 \cite{sfm}. Recent work replaces this with feed-forward prediction. 
 DUSt3R \cite{DUSt3R} pioneered dense point regression from image pairs but requires 
-global alignment for multiple views. VGGT \cite{vggt} extends this with camera tokens 
+global alignment for multiple views. VGGT \cite{vggt} addresses this problem by utilizing camera tokens 
 and alternating attention, processing 1-200+ images jointly. MonST3R \cite{MonST3R} 
 performs pairwise tracking for dynamic scenes; Geo4D \cite{geo4d} adapts video diffusion 
 models. All require expensive supervision: DUSt3R/VGGT use structure-from-motion labels, 
 Geo4D uses synthetic data rendered from 3D assets, limiting real-world scalability.
 
+\vspace{-0.5cm}
 \subsection{Self-Supervised Learning (SSL)}
 
 Self-supervised learning (SSL) extracts training signals from data structure. Masked 
@@ -62,7 +70,7 @@ self-supervised depth \cite{godard2019,watson2021} uses photometric consistency 
 consecutive frames. However, methods predict per-frame depth independently, treating video as image sequences 
 rather than modeling temporal geometric structure. Whether SSL objectives can teach 
 spatiotemporal reasoning - tracking evolving geometry and maintaining multi-view 
-consistency - remains unexplored yet fundamental to scaling video geometric understanding.
+consistency - is fundamental question to scaling video geometric understanding.
 
 
 \section{Problem Statement}
@@ -74,7 +82,7 @@ to video geometry remains limited by several fundamental challenges:
 
 \textbf{Temporal signals and shortcuts - }Videos encode geometric constraints through motion parallax and occlusion patterns, yet naive temporal objectives permit trivial solutions - copying pixels across frames or learning optical flow without depth understanding. Which temporal SSL objectives force genuine spatiotemporal geometric reasoning rather than enabling such shortcuts?
 
-\textbf{Scaling to real video - }Current methods use expensive supervision \cite{vggt} or synthetic data \cite{geo4d}, limiting scale. Whether pretraining on real unlabeled video can match these approaches, how much data is required, and which objectives transfer most effectively to downstream tasks remain uncharacterized - yet are essential for scaling video geometric learning.
+\textbf{Scaling to real video - }Current methods use expensive supervision \cite{vggt} or synthetic data \cite{geo4d}, either limiting data scale or real-world generalization. Whether pretraining on real unlabeled video can match these approaches, how much data is required, and which objectives transfer most effectively to downstream tasks remain uncharacterized - yet are essential for scaling video geometric learning.
 
 \section{Research Plan}
 
@@ -84,13 +92,14 @@ to video geometry remains limited by several fundamental challenges:
 
 \textbf{(2) How do different temporal signals interact in multi-objective training?} SSL methods combine multiple objectives~\cite{dino,videomae} - temporal consistency, geometric coupling, predictive modeling. Which combinations are complementary versus redundant for geometric learning? Can we identify minimal sets that maximize geometric supervision while maintaining data efficiency?
 
-\textbf{(3) What are the data efficiency and scaling properties of video pretraining for geometry?} How much unlabeled video is required to match supervised methods like \cite{vggt} or synthetic approaches like \cite{geo4d}? Do scaling curves differ across objective types, and which downstream tasks benefit most from video pretraining?\subsection{Proposed Investigation}
+\textbf{(3) What are the data efficiency and scaling properties of video pretraining for geometry?} How much unlabeled video is required to match supervised methods like \cite{vggt} or synthetic approaches like \cite{geo4d}? Can we characterize predictable relationships between pretraining data scale and downstream performance, analogous to scaling laws in language models~\cite{scaling_laws}, and which objectives transfer most effectively to downstream tasks?
 
-\textbf{Methodological framework.} This work systematically investigates SSL objectives across three categories: \textit{temporal consistency} (photometric matching~\cite{godard2019}, cycle consistency), \textit{geometric coupling} (depth-flow constraints, multi-view consistency~\cite{vggt}), and \textit{predictive modeling} (masked spatiotemporal reconstruction~\cite{videomae}). Beyond evaluating existing methods, this research designs and tests novel objectives that exploit video-specific geometric signals. Through controlled experiments isolating individual design choices - objective type, combination of objectives within same type, and data scale - it establishes which approaches enable genuine geometric reasoning versus appearance-based shortcuts.
 
-\textbf{Experiment design.} Pretraining uses real unlabeled video from RealEstate10K~\cite{realestate10k}, containing diverse indoor and outdoor scenes with natural camera motion. Evaluation benchmarks include NYU Depth V2~\cite{nyu} and KITTI~\cite{kitti} for depth estimation, Sintel~\cite{sintel} for optical flow, and standard metrics for camera pose estimation. Comparisons against supervised baselines \cite{vggt} and synthetic pretraining approaches \cite{geo4d} measure both downstream task performance and data efficiency curves across varying amounts of pretraining data.
+\textbf{Methodological framework - }This work systematically investigates existing SSL objectives across three categories: \textit{temporal consistency} (photometric matching~\cite{godard2019}, cycle consistency~\cite{cyclesfm}), \textit{geometric coupling} (depth-flow constraints~\cite{geonet}, multi-view consistency~\cite{vggt}), and \textit{predictive modeling} (masked spatiotemporal reconstruction~\cite{videomae}). Based on insights from systematic ablations, this research will explore novel extensions where existing objectives prove insufficient for capturing temporal geometric structure. Through controlled experiments isolating objective type, objective combinations, and data scale, this investigation establishes which temporal signals enable genuine geometric reasoning versus appearance shortcuts, and characterizes their scaling properties.\newpage
 
-\textbf{Timeline.} Year 1 establishes the training framework, evaluates existing temporal SSL objectives, and explores novel objectives leveraging video-specific geometric signals. Year 2 conducts comprehensive ablation studies across all objective categories (temporal consistency, geometric coupling, predictive modeling) and investigates multi-objective interactions. Year 3 characterizes data efficiency through scaling experiments and validates transfer to downstream tasks (depth, pose, flow estimation).
+\textbf{Experiment design - }Pretraining uses real unlabeled video from RealEstate10K~\cite{realestate10k}, containing diverse indoor and outdoor scenes with natural camera motion. Evaluation benchmarks include NYU Depth V2~\cite{nyu} and KITTI~\cite{kitti} for depth estimation, Sintel~\cite{sintel} for optical flow, and standard metrics for camera pose estimation. Comparisons against supervised baselines \cite{vggt} and synthetic pretraining approaches \cite{geo4d} measure both downstream task performance and data efficiency curves across varying amounts of pretraining data.
+
+\textbf{Timeline - }Year 1 establishes the training framework, evaluates existing temporal SSL objectives, and explores novel objectives leveraging video-specific geometric signals. Year 2 conducts comprehensive ablation studies across all objective categories (temporal consistency, geometric coupling, predictive modeling) and investigates multi-objective interactions. Year 3 characterizes data efficiency through scaling experiments and validates transfer to downstream tasks (depth, pose, flow estimation).
 
 \subsection{Expected Contributions}
 
